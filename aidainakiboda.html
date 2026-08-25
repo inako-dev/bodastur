@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aida &amp; Iñaki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Work+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+  /* ---------- tokens ----------
+     A deliberately single, light world: broken white, a predominant soft
+     sky/sea blue, and forest green as the complementary touch. */
+  :root{
+    --paper:#F4F6F1;
+    --paper-2:#E7EEE6;
+    --paper-2-rgb:231,238,230;
+    --ink:#22302A;
+    --ink-soft:#55655B;
+    --sky:#DCEBF0;
+    --blue:#8FC0D1;
+    --blue-deep:#3E7A90;
+    --forest:#3F6249;
+    --forest-light:#8AAE8D;
+    --line:rgba(34,48,42,0.14);
+    --shadow:0 22px 60px -32px rgba(62,122,144,0.32);
+    --focus:#3E7A90;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Work Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:1.05rem;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3{
+    font-family:"Fraunces", Georgia, "Times New Roman", serif;
+    font-weight:500;
+    line-height:1.08;
+    text-wrap:balance;
+    margin:0;
+    color:var(--ink);
+  }
+
+  a{ color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+
+  :focus-visible{
+    outline:2.5px solid var(--focus);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+
+  .eyebrow{
+    font-family:"Work Sans", sans-serif;
+    font-size:0.78rem;
+    font-weight:600;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--forest);
+    margin:0 0 0.9rem;
+  }
+
+  /* ---------- fixed atmosphere backdrop ---------- */
+  .atmosphere{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    overflow:hidden;
+    background:linear-gradient(180deg,
+      var(--sky) 0%,
+      var(--blue) 30%,
+      color-mix(in srgb, var(--blue) 35%, var(--paper)) 48%,
+      var(--paper) 62%,
+      var(--paper) 100%);
+  }
+  .atmosphere svg{ position:absolute; left:0; width:100%; height:auto; }
+  .ridge-far{   top:20vh;  opacity:0.55; }
+  .ridge-mid{   top:32vh;  opacity:0.75; }
+  .ridge-near{  top:44vh;  opacity:1; }
+  .sea-glint{ position:absolute; top:6vh; left:0; width:100%; height:40vh; opacity:0.5;
+    background:repeating-linear-gradient(100deg, rgba(255,255,255,0.10) 0 2px, transparent 2px 60px);
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap;
+    row-gap:0.6rem;
+    gap:1rem;
+    padding:1.1rem clamp(1.2rem, 4vw, 3rem);
+    background:rgba(var(--paper-2-rgb), 0);
+    backdrop-filter:blur(0px);
+    transition:background 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease;
+  }
+  .nav.scrolled{
+    background:rgba(var(--paper-2-rgb), 0.82);
+    backdrop-filter:blur(14px);
+    box-shadow:0 1px 0 var(--line);
+  }
+  .nav-mark{
+    font-family:"Fraunces", serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:1.25rem;
+    letter-spacing:0.02em;
+    color:var(--ink);
+    text-decoration:none;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .nav.scrolled .nav-mark{ color:var(--ink); }
+
+  .nav-right{ display:flex; align-items:center; gap:0.9rem; flex-wrap:wrap; }
+
+  @media (max-width:600px){
+    .nav{ padding:0.9rem 1.2rem; }
+    .nav-mark{ flex:1 0 100%; font-size:1.1rem; }
+    .nav-right{ flex:1 0 100%; justify-content:space-between; gap:0.6rem; }
+    .nav-cta{ font-size:0.74rem; padding:0.5rem 0.85rem; }
+    .lang-switch button{ padding:0.35rem 0.5rem; font-size:0.72rem; }
+  }
+
+  .lang-switch{
+    display:flex; gap:0.25rem;
+    padding:0.25rem;
+    border-radius:999px;
+    background:rgba(255,255,255,0.55);
+    border:1px solid var(--line);
+    transition:background 0.4s ease, border-color 0.4s ease;
+  }
+  .nav.scrolled .lang-switch{
+    background:rgba(var(--paper-2-rgb), 0.75);
+    border-color:var(--line);
+  }
+  .lang-switch button{
+    appearance:none; border:none; cursor:pointer;
+    font-family:"Work Sans", sans-serif;
+    font-size:0.75rem; font-weight:600; letter-spacing:0.04em;
+    padding:0.4rem 0.65rem;
+    border-radius:999px;
+    background:transparent;
+    color:var(--ink-soft);
+    transition:background 0.25s ease, color 0.25s ease;
+  }
+  .lang-switch button[aria-pressed="true"]{
+    background:var(--blue-deep);
+    color:#fff;
+  }
+
+  .nav-cta{
+    font-family:"Work Sans", sans-serif;
+    font-size:0.8rem; font-weight:600; letter-spacing:0.03em;
+    text-decoration:none;
+    padding:0.55rem 1.1rem;
+    border-radius:999px;
+    background:var(--blue-deep);
+    color:#fff !important;
+    white-space:nowrap;
+    box-shadow:0 8px 20px -8px rgba(62,122,144,0.55);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .nav-cta:hover{ transform:translateY(-1px); box-shadow:0 12px 24px -8px rgba(62,122,144,0.65); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:6rem 1.5rem 8rem;
+    color:var(--ink);
+  }
+  .hero-eyebrow{
+    font-size:0.8rem; font-weight:600; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--forest);
+    margin:0 0 1.4rem;
+  }
+  .hero-names{
+    font-size:clamp(3rem, 7vw + 1rem, 6.4rem);
+    font-style:italic;
+    font-weight:500;
+    color:var(--ink);
+    text-shadow:0 2px 30px rgba(62,122,144,0.18);
+  }
+  .hero-date{
+    margin-top:1.1rem;
+    font-family:"Work Sans", sans-serif;
+    font-size:clamp(1rem, 0.4vw + 0.95rem, 1.2rem);
+    font-weight:500;
+    letter-spacing:0.06em;
+    color:var(--blue-deep);
+  }
+  .hero-sub{
+    margin:1.8rem 0 0;
+    max-width:36rem;
+    font-size:1.08rem;
+    color:var(--ink-soft);
+  }
+  .hero-scroll{
+    margin-top:3.2rem;
+    display:flex; flex-direction:column; align-items:center; gap:0.5rem;
+    font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .hero-scroll .line{
+    width:1px; height:2.6rem;
+    background:linear-gradient(180deg, rgba(34,48,42,0.5), transparent);
+    animation:scrollpulse 2.4s ease-in-out infinite;
+  }
+  @keyframes scrollpulse{
+    0%,100%{ transform:scaleY(0.6); opacity:0.5; }
+    50%{ transform:scaleY(1); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero-scroll .line{ animation:none; }
+  }
+
+  /* ---------- content flow ---------- */
+  main{ position:relative; }
+
+  .section{
+    padding:clamp(3.5rem, 6vw, 6rem) clamp(1.2rem, 4vw, 3rem);
+  }
+  .card{
+    max-width:46rem;
+    margin:0 auto;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:1.4rem;
+    padding:clamp(2rem, 4vw, 3.2rem);
+    box-shadow:var(--shadow);
+  }
+  .card.wide{ max-width:60rem; }
+
+  .reveal{
+    opacity:0;
+    transform:translateY(26px);
+    transition:opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ transition:none; opacity:1; transform:none; }
+  }
+
+  .intro h2{ font-size:clamp(1.7rem, 1.4vw + 1.3rem, 2.3rem); }
+  .intro p{ margin:1.1rem 0 0; color:var(--ink-soft); max-width:38rem; }
+
+  /* ---------- rsvp ---------- */
+  .rsvp .card{
+    text-align:center;
+    background:linear-gradient(165deg, var(--paper-2), var(--paper));
+  }
+  .rsvp h2{ font-size:clamp(1.8rem, 1.6vw + 1.3rem, 2.5rem); }
+  .rsvp p{ margin:1.1rem auto 0; max-width:32rem; color:var(--ink-soft); }
+  .rsvp-btn{
+    display:inline-block;
+    margin-top:2rem;
+    text-decoration:none;
+    font-family:"Work Sans", sans-serif;
+    font-weight:600;
+    font-size:1rem;
+    letter-spacing:0.02em;
+    color:#fff;
+    background:var(--blue-deep);
+    padding:1rem 2.1rem;
+    border-radius:999px;
+    box-shadow:0 14px 30px -12px rgba(62,122,144,0.5);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .rsvp-btn:hover{ transform:translateY(-2px); box-shadow:0 18px 36px -12px rgba(62,122,144,0.6); }
+
+  /* ---------- plan / timeline ---------- */
+  .plan h2{ font-size:clamp(1.8rem, 1.6vw + 1.3rem, 2.5rem); text-align:center; }
+  .plan-intro{
+    text-align:center; max-width:34rem; margin:1.1rem auto 0; color:var(--ink-soft);
+  }
+  .plan-eyebrow{ text-align:center; }
+
+  .timeline{
+    max-width:44rem;
+    margin:3rem auto 0;
+    display:flex; flex-direction:column;
+    gap:0;
+  }
+  .t-item{
+    display:grid;
+    grid-template-columns:7.5rem 1fr;
+    gap:1.4rem;
+    padding:1.6rem 0;
+    border-top:1px solid var(--line);
+    position:relative;
+  }
+  .t-item:last-child{ border-bottom:1px solid var(--line); }
+  .t-date{
+    font-family:"Work Sans", sans-serif;
+    font-size:0.82rem; font-weight:600; letter-spacing:0.04em;
+    color:var(--forest);
+    padding-top:0.15rem;
+  }
+  .t-body h3{ font-size:1.28rem; font-weight:500; }
+  .t-place{
+    display:inline-block;
+    margin-top:0.35rem;
+    font-size:0.8rem; font-weight:600; letter-spacing:0.03em;
+    color:var(--blue-deep);
+  }
+  .t-desc{ margin:0.6rem 0 0; color:var(--ink-soft); font-size:0.98rem; }
+
+  @media (max-width:34rem){
+    .t-item{ grid-template-columns:1fr; gap:0.4rem; }
+  }
+
+  /* ---------- logistics ---------- */
+  .logistics h2{ font-size:clamp(1.8rem, 1.6vw + 1.3rem, 2.5rem); text-align:center; }
+  .logistics-eyebrow{ text-align:center; }
+  .logistics-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.4rem;
+    max-width:60rem;
+    margin:3rem auto 0;
+  }
+  @media (max-width:44rem){
+    .logistics-grid{ grid-template-columns:1fr; }
+  }
+  .l-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:1.2rem;
+    padding:clamp(1.6rem, 3vw, 2.2rem);
+    box-shadow:var(--shadow);
+  }
+  .l-card h3{
+    font-size:1.35rem; font-weight:500;
+    display:flex; align-items:center; gap:0.6rem;
+    margin-bottom:1.2rem;
+  }
+  .l-icon{ width:1.4rem; height:1.4rem; flex:none; color:var(--blue-deep); }
+  .l-tag{
+    display:inline-block;
+    font-size:0.7rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--forest);
+    background:color-mix(in srgb, var(--forest) 14%, transparent);
+    padding:0.25rem 0.6rem;
+    border-radius:999px;
+    margin-bottom:0.6rem;
+  }
+  .l-primary-title{ font-family:"Fraunces", serif; font-size:1.15rem; font-weight:500; margin:0 0 0.5rem; }
+  .l-card p{ margin:0 0 0.9rem; color:var(--ink-soft); font-size:0.96rem; }
+  .l-card p:last-child{ margin-bottom:0; }
+  .hotel-list{
+    list-style:none; margin:0 0 0.9rem; padding:0;
+    display:grid; grid-template-columns:1fr 1fr; gap:0.35rem 1rem;
+  }
+  .hotel-list li{
+    font-size:0.92rem; color:var(--ink);
+    padding-left:0.9rem; position:relative;
+  }
+  .hotel-list li::before{
+    content:"";
+    position:absolute; left:0; top:0.55em;
+    width:5px; height:5px; border-radius:50%;
+    background:var(--forest);
+  }
+  .l-note{
+    font-size:0.86rem; color:var(--ink-soft); font-style:italic;
+    border-top:1px solid var(--line); padding-top:0.8rem; margin-top:0.8rem !important;
+  }
+  .t-row{ display:flex; gap:0.7rem; margin-bottom:0.9rem; }
+  .t-row:last-child{ margin-bottom:0; }
+  .t-row .l-icon{ margin-top:0.15rem; }
+  .t-row p{ margin:0; }
+
+  /* ---------- closing ---------- */
+  .closing{ text-align:center; padding-bottom:2rem; }
+  .closing h2{
+    font-size:clamp(2.2rem, 3vw + 1.4rem, 3.4rem);
+    font-style:italic;
+  }
+  .closing p{ margin:1.2rem auto 0; max-width:30rem; color:var(--ink-soft); }
+  .closing .rsvp-btn{ margin-top:2.2rem; }
+  .signature{
+    margin-top:2.6rem;
+    font-family:"Fraunces", serif;
+    font-style:italic;
+    font-size:1.15rem;
+    color:var(--forest);
+  }
+
+  footer{
+    text-align:center;
+    padding:2.5rem 1.5rem 3rem;
+    font-size:0.8rem;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+  }
+</style>
+
+<div class="atmosphere" aria-hidden="true">
+  <div class="sea-glint" data-parallax="0.15"></div>
+  <svg data-parallax="0.25" class="ridge-far" viewBox="0 0 1440 260" preserveAspectRatio="none">
+    <path fill="var(--forest-light)" d="M0,180 L100,140 220,190 340,120 460,170 600,110 740,175 880,130 1020,185 1160,125 1300,170 1440,140 1440,260 0,260 Z"/>
+  </svg>
+  <svg data-parallax="0.4" class="ridge-mid" viewBox="0 0 1440 260" preserveAspectRatio="none">
+    <path fill="var(--forest)" d="M0,210 L120,150 260,205 380,130 520,195 660,145 800,200 940,150 1080,210 1220,160 1360,200 1440,175 1440,260 0,260 Z"/>
+  </svg>
+  <svg data-parallax="0.6" class="ridge-near" viewBox="0 0 1440 220" preserveAspectRatio="none">
+    <path fill="var(--paper)" d="M0,150 L110,190 240,120 360,175 500,110 640,180 780,130 920,190 1060,140 1200,185 1320,150 1440,175 1440,220 0,220 Z"/>
+  </svg>
+</div>
+
+<header class="nav" id="siteNav">
+  <span class="nav-mark">Aida · Iñaki</span>
+  <div class="nav-right">
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" data-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+    </div>
+    <a class="nav-cta" href="#" data-i18n="nav.rsvp" data-rsvp-link>Confirmar asistencia</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="hero-eyebrow" data-i18n="hero.eyebrow">Nos casamos</p>
+    <h1 class="hero-names" data-i18n="hero.names">Aida e Iñaki</h1>
+    <p class="hero-date" data-i18n="hero.date">18 de septiembre de 2027</p>
+    <p class="hero-sub" data-i18n="hero.sub">Del 17 al 19 de septiembre os esperamos en Deva, Asturias, entre el Cantábrico y el verde de las montañas, para celebrar con quien queramos cerca.</p>
+    <div class="hero-scroll">
+      <span data-i18n="hero.scroll">Desliza</span>
+      <span class="line"></span>
+    </div>
+  </section>
+
+  <section class="section intro">
+    <div class="card reveal">
+      <p class="eyebrow" data-i18n="intro.eyebrow">Bienvenidos</p>
+      <h2 data-i18n="intro.title">Un fin de semana, no solo un día</h2>
+      <p data-i18n="intro.body">Llevamos tiempo con ganas de este fin de semana: sidra, sobremesas largas, mar de fondo y la montaña en lo alto del valle. Hemos organizado tres días en Deva para quien quiera acompañarnos, y con una ceremonia tradicional asturiana para compartir comida, música y baile juntos. Aquí tenéis todo lo necesario para venir tranquilos: cómo llegar, dónde dormir y qué vamos a hacer.</p>
+    </div>
+  </section>
+
+  <section class="section rsvp">
+    <div class="card reveal">
+      <p class="eyebrow" data-i18n="rsvp.eyebrow">Antes de nada</p>
+      <h2 data-i18n="rsvp.title">Confirmadnos que venís</h2>
+      <p data-i18n="rsvp.body">Rellenad el formulario con vuestros datos, si venís acompañados y si tenéis alguna alergia o necesidad especial. Nos ayuda muchísimo a organizarlo todo con tiempo.</p>
+      <a class="rsvp-btn" href="#" data-i18n="rsvp.button" data-rsvp-link>Ir al formulario</a>
+    </div>
+  </section>
+
+  <section class="section plan">
+    <p class="eyebrow plan-eyebrow" data-i18n="plan.eyebrow">El plan</p>
+    <h2 class="reveal" data-i18n="plan.title">Tres días en Deva</h2>
+    <p class="plan-intro reveal" data-i18n="plan.intro">Podéis venir solo el sábado o quedaros el fin de semana entero, alojados en el Camping de Deva. Esto es lo que tenemos pensado:</p>
+
+    <div class="timeline">
+      <div class="t-item reveal">
+        <span class="t-date" data-i18n="plan.i1.date">Vie 17</span>
+        <div class="t-body">
+          <h3 data-i18n="plan.i1.title">Parrillada de bienvenida</h3>
+          <span class="t-place">Camping de Deva</span>
+          <p class="t-desc" data-i18n="plan.i1.desc">Primer contacto con barbacoa, sidra y sobremesa larga, en el camping.</p>
+        </div>
+      </div>
+      <div class="t-item reveal">
+        <span class="t-date" data-i18n="plan.i2.date">Sáb 18 · mañana</span>
+        <div class="t-body">
+          <h3 data-i18n="plan.i2.title">Yoga y pádel</h3>
+          <span class="t-place">Camping de Deva</span>
+          <p class="t-desc" data-i18n="plan.i2.desc">Para quien quiera despejarse antes de la tarde grande. Yoga suave y unas palas, a vuestro ritmo.</p>
+        </div>
+      </div>
+      <div class="t-item reveal">
+        <span class="t-date" data-i18n="plan.i3.date">Sáb 18</span>
+        <div class="t-body">
+          <h3 data-i18n="plan.i3.title">Ceremonia y celebración</h3>
+          <span class="t-place">Llagar El Trole, Deva</span>
+          <p class="t-desc" data-i18n="plan.i3.desc">La boda. Ceremonia, comida, sidra escanciada y fiesta hasta que el cuerpo aguante.</p>
+        </div>
+      </div>
+      <div class="t-item reveal">
+        <span class="t-date" data-i18n="plan.i4.date">Dom 19</span>
+        <div class="t-body">
+          <h3 data-i18n="plan.i4.title">Desayuno con comentada</h3>
+          <span class="t-place">Camping de Deva</span>
+          <p class="t-desc" data-i18n="plan.i4.desc">Café, resumen de la noche anterior y una despedida tranquila antes de volver a casa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section logistics">
+    <p class="eyebrow logistics-eyebrow" data-i18n="logistics.eyebrow">Información práctica</p>
+    <h2 class="reveal" data-i18n="logistics.title">Cómo venir y dónde dormir</h2>
+
+    <div class="logistics-grid">
+      <div class="l-card reveal">
+        <h3>
+          <svg class="l-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+          <span data-i18n="stay.title">Alojamiento</span>
+        </h3>
+        <span class="l-tag" data-i18n="stay.primaryLabel">Recomendado</span>
+        <p class="l-primary-title">Camping de Deva</p>
+        <p data-i18n="stay.primaryDesc">Nuestra opción para el fin de semana completo: bungalós y parcelas a un paseo del llagar. Aquí serán también la parrillada, el yoga/pádel y el desayuno del domingo.</p>
+        <p data-i18n="stay.altIntro">Si preferís algo más urbano, Gijón está muy cerca y tiene muchas opciones, entre ellas:</p>
+        <ul class="hotel-list">
+          <li>Hotel Begoña</li>
+          <li>Hotel Príncipe de Asturias</li>
+          <li>Silken Ciudad de Gijón</li>
+          <li>Abba Playa Gijón</li>
+          <li>Hotel Asturias</li>
+        </ul>
+        <p class="l-note" data-i18n="stay.note">Os recomendamos reservar con tiempo, sobre todo si venís el fin de semana completo.</p>
+      </div>
+
+      <div class="l-card reveal">
+        <h3>
+          <svg class="l-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9M4 16a2 2 0 0 0 2 2h1m-3-2h18m-3 2a2 2 0 0 0 2-2M8 21v-1.5M16 21v-1.5M7 11h10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="transport.title">Transporte</span>
+        </h3>
+        <div class="t-row">
+          <svg class="l-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:1.15rem;height:1.15rem"><path d="M4 15V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9m-16 0a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2m-16 0-2 5m18-5 2 5M9 11h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p data-i18n="transport.train">En tren o autobús: Renfe y Alsa llegan hasta la Estación Intermodal de Gijón, a un salto de Deva.</p>
+        </div>
+        <div class="t-row">
+          <svg class="l-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:1.15rem;height:1.15rem"><path d="M10.5 21 12 17l1.5 4M3 15l18-6-3-3-15 4-2 2 2 3Zm9-9 3-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p data-i18n="transport.plane">En avión: el Aeropuerto de Asturias tiene autobuses directos a Gijón.</p>
+        </div>
+        <div class="t-row">
+          <svg class="l-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:1.15rem;height:1.15rem"><path d="M5 17h14M6 17V9l2-4h8l2 4v8M6 17a2 2 0 1 0 4 0M14 17a2 2 0 1 0 4 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p data-i18n="transport.car">En coche: hay aparcamiento tanto en el Camping de Deva como junto al Llagar El Trole para la ceremonia.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section closing">
+    <h2 class="reveal" data-i18n="closing.title">Nos vemos en Asturias</h2>
+    <p class="reveal" data-i18n="closing.body">Cualquier duda, escribidnos sin más. Estamos deseando compartir esto con vosotros.</p>
+    <a class="rsvp-btn reveal" href="#" data-i18n="rsvp.button" data-rsvp-link>Ir al formulario</a>
+    <p class="signature reveal" data-i18n="closing.signature">Con todo el cariño, Aida e Iñaki</p>
+  </section>
+</main>
+
+<footer>
+  <span>Deva, Asturias · 17&ndash;19.09.2027</span>
+</footer>
+
+<script>
+(function(){
+  var dict = {
+    "nav.rsvp": { es:"Confirmar asistencia", en:"RSVP", fr:"Confirmer sa venue" },
+    "hero.eyebrow": { es:"Nos casamos", en:"We're getting married", fr:"On se marie" },
+    "hero.names": { es:"Aida e Iñaki", en:"Aida &amp; Iñaki", fr:"Aida &amp; Iñaki" },
+    "hero.date": { es:"18 de septiembre de 2027", en:"September 18, 2027", fr:"18 septembre 2027" },
+    "hero.sub": {
+      es:"Del 17 al 19 de septiembre os esperamos en Deva, Asturias, entre el Cantábrico y el verde de las montañas, para celebrar con quien queramos cerca.",
+      en:"From September 17th to 19th, we'll be in Deva, Asturias, between the Cantabrian Sea and the green hills, celebrating with everyone we love close by.",
+      fr:"Du 17 au 19 septembre, nous vous attendons à Deva, dans les Asturies, entre la mer Cantabrique et les collines vertes, pour célébrer entourés de ceux qu'on aime."
+    },
+    "hero.scroll": { es:"Desliza", en:"Scroll", fr:"Défiler" },
+
+    "intro.eyebrow": { es:"Bienvenidos", en:"Welcome", fr:"Bienvenue" },
+    "intro.title": { es:"Un fin de semana, no solo un día", en:"A whole weekend, not just a day", fr:"Un week-end entier, pas juste un jour" },
+    "intro.body": {
+      es:"Llevamos tiempo con ganas de este fin de semana: sidra, sobremesas largas, mar de fondo y la montaña en lo alto del valle. Hemos organizado tres días en Deva para quien quiera acompañarnos, y con una ceremonia tradicional asturiana para compartir comida, música y baile juntos. Aquí tenéis todo lo necesario para venir tranquilos: cómo llegar, dónde dormir y qué vamos a hacer.",
+      en:"We've been looking forward to this weekend for a long time: cider, long lunches, the sea close by and the mountains rising at the top of the valley. We've planned three days in Deva for anyone who'd like to join us, built around a traditional Asturian ceremony where we'll share food, music, and dancing together. Here's everything you need to come without worrying: how to get there, where to sleep, and what we'll be doing.",
+      fr:"Cela fait longtemps qu'on attend ce week-end : cidre, longs repas, la mer tout près et la montagne qui domine la vallée. On a organisé trois jours à Deva pour celles et ceux qui voudraient nous accompagner, autour d'une cérémonie traditionnelle asturienne pour partager repas, musique et danse ensemble. Voici tout ce qu'il faut pour venir l'esprit tranquille : comment arriver, où dormir, et ce qu'on va faire."
+    },
+
+    "rsvp.eyebrow": { es:"Antes de nada", en:"First things first", fr:"Avant tout" },
+    "rsvp.title": { es:"Confirmadnos que venís", en:"Let us know you're coming", fr:"Confirmez votre venue" },
+    "rsvp.body": {
+      es:"Rellenad el formulario con vuestros datos, si venís acompañados y si tenéis alguna alergia o necesidad especial. Nos ayuda muchísimo a organizarlo todo con tiempo.",
+      en:"Fill in the form with your details, whether you're bringing anyone, and any allergies or special needs. It helps us enormously to plan everything ahead.",
+      fr:"Remplissez le formulaire avec vos informations, si vous venez accompagné·e et si vous avez des allergies ou besoins particuliers. Cela nous aide énormément à tout organiser à l'avance."
+    },
+    "rsvp.button": { es:"Ir al formulario", en:"Go to the form", fr:"Accéder au formulaire" },
+
+    "plan.eyebrow": { es:"El plan", en:"The plan", fr:"Le programme" },
+    "plan.title": { es:"Tres días en Deva", en:"Three days in Deva", fr:"Trois jours à Deva" },
+    "plan.intro": {
+      es:"Podéis venir solo el sábado o quedaros el fin de semana entero, alojados en el Camping de Deva. Esto es lo que tenemos pensado:",
+      en:"You can come just for Saturday or stay the whole weekend at the Camping de Deva. Here's what we have planned:",
+      fr:"Vous pouvez venir seulement le samedi ou rester tout le week-end, logés au Camping de Deva. Voici ce qu'on a prévu :"
+    },
+
+    "plan.i1.date": { es:"Vie 17", en:"Fri 17", fr:"Ven 17" },
+    "plan.i1.title": { es:"Parrillada de bienvenida", en:"Welcome barbecue", fr:"Barbecue de bienvenue" },
+    "plan.i1.desc": {
+      es:"Primer contacto con barbacoa, sidra y sobremesa larga, en el camping.",
+      en:"A first get-together with barbecue, cider, and a long evening at the camping.",
+      fr:"Premier moment ensemble : barbecue, cidre et longue soirée au camping."
+    },
+    "plan.i2.date": { es:"Sáb 18 · mañana", en:"Sat 18 · morning", fr:"Sam 18 · matin" },
+    "plan.i2.title": { es:"Yoga y pádel", en:"Yoga &amp; padel", fr:"Yoga et padel" },
+    "plan.i2.desc": {
+      es:"Para quien quiera despejarse antes de la tarde grande. Yoga suave y unas palas, a vuestro ritmo.",
+      en:"For anyone who wants to clear their head before the big afternoon. Easy yoga and a bit of padel, at your own pace.",
+      fr:"Pour celles et ceux qui veulent se vider la tête avant l'après-midi. Yoga tranquille et un peu de padel, à votre rythme."
+    },
+    "plan.i3.date": { es:"Sáb 18", en:"Sat 18", fr:"Sam 18" },
+    "plan.i3.title": { es:"Ceremonia y celebración", en:"Ceremony &amp; celebration", fr:"Cérémonie et fête" },
+    "plan.i3.desc": {
+      es:"La boda. Ceremonia, comida, sidra escanciada y fiesta hasta que el cuerpo aguante.",
+      en:"The wedding. Ceremony, lunch, poured cider, and a party for as long as everyone can keep going.",
+      fr:"Le mariage. Cérémonie, repas, cidre versé et fête tant que les jambes tiennent."
+    },
+    "plan.i4.date": { es:"Dom 19", en:"Sun 19", fr:"Dim 19" },
+    "plan.i4.title": { es:"Desayuno con comentada", en:"Debrief breakfast", fr:"Petit-déjeuner debrief" },
+    "plan.i4.desc": {
+      es:"Café, resumen de la noche anterior y una despedida tranquila antes de volver a casa.",
+      en:"Coffee, a recap of the night before, and an easy goodbye before heading home.",
+      fr:"Café, récap de la soirée et un au revoir tranquille avant de rentrer."
+    },
+
+    "logistics.eyebrow": { es:"Información práctica", en:"Practical information", fr:"Informations pratiques" },
+    "logistics.title": { es:"Cómo venir y dónde dormir", en:"Getting there and where to stay", fr:"Comment venir et où dormir" },
+
+    "stay.title": { es:"Alojamiento", en:"Where to stay", fr:"Hébergement" },
+    "stay.primaryLabel": { es:"Recomendado", en:"Recommended", fr:"Recommandé" },
+    "stay.primaryDesc": {
+      es:"Nuestra opción para el fin de semana completo: bungalós y parcelas a un paseo del llagar. Aquí serán también la parrillada, el yoga/pádel y el desayuno del domingo.",
+      en:"Our pick for the full weekend: bungalows and pitches a short walk from the llagar. It's also where the barbecue, yoga/padel, and Sunday breakfast will happen.",
+      fr:"Notre choix pour le week-end complet : bungalows et emplacements à deux pas du llagar. C'est aussi là qu'auront lieu le barbecue, le yoga/padel et le petit-déjeuner du dimanche."
+    },
+    "stay.altIntro": {
+      es:"Si preferís algo más urbano, Gijón está muy cerca y tiene muchas opciones, entre ellas:",
+      en:"If you'd rather stay in the city, Gijón is very close by and has plenty of options, including:",
+      fr:"Si vous préférez la ville, Gijón est tout près et propose de nombreuses options, dont :"
+    },
+    "stay.note": {
+      es:"Os recomendamos reservar con tiempo, sobre todo si venís el fin de semana completo.",
+      en:"We'd recommend booking early, especially if you're joining for the whole weekend.",
+      fr:"Nous vous conseillons de réserver à l'avance, surtout si vous venez tout le week-end."
+    },
+
+    "transport.title": { es:"Transporte", en:"Getting there", fr:"Transport" },
+    "transport.train": {
+      es:"En tren o autobús: Renfe y Alsa llegan hasta la Estación Intermodal de Gijón, a un salto de Deva.",
+      en:"By train or bus: Renfe and Alsa both reach Gijón's Estación Intermodal, a short hop from Deva.",
+      fr:"En train ou en bus : Renfe et Alsa desservent la gare intermodale de Gijón, à deux pas de Deva."
+    },
+    "transport.plane": {
+      es:"En avión: el Aeropuerto de Asturias tiene autobuses directos a Gijón.",
+      en:"By plane: Asturias Airport has direct buses to Gijón.",
+      fr:"En avion : l'aéroport des Asturies propose des bus directs vers Gijón."
+    },
+    "transport.car": {
+      es:"En coche: hay aparcamiento tanto en el Camping de Deva como junto al Llagar El Trole para la ceremonia.",
+      en:"By car: there's parking both at the Camping de Deva and next to Llagar El Trole for the ceremony.",
+      fr:"En voiture : un parking est disponible au Camping de Deva ainsi qu'à côté du Llagar El Trole pour la cérémonie."
+    },
+
+    "closing.title": { es:"Nos vemos en Asturias", en:"See you in Asturias", fr:"On se retrouve dans les Asturies" },
+    "closing.body": {
+      es:"Cualquier duda, escribidnos sin más. Estamos deseando compartir esto con vosotros.",
+      en:"If you have any questions, just reach out. We can't wait to share this with you.",
+      fr:"Pour toute question, écrivez-nous simplement. Nous avons hâte de partager ça avec vous."
+    },
+    "closing.signature": { es:"Con todo el cariño, Aida e Iñaki", en:"With love, Aida &amp; Iñaki", fr:"Avec tout notre amour, Aida &amp; Iñaki" }
+  };
+
+  var LANG_KEY = "boda-aida-inaki-lang";
+  var current = "es";
+  try{
+    var saved = localStorage.getItem(LANG_KEY);
+    if(saved && (saved === "es" || saved === "en" || saved === "fr")) current = saved;
+  }catch(e){}
+
+  function applyLang(lang){
+    current = lang;
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      var entry = dict[key];
+      if(entry && entry[lang] !== undefined){
+        el.innerHTML = entry[lang];
+      }
+    });
+    document.querySelectorAll(".lang-switch button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    try{ document.documentElement.setAttribute("lang", lang); }catch(e){}
+    try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+  }
+
+  document.querySelectorAll(".lang-switch button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      applyLang(btn.getAttribute("data-lang"));
+    });
+  });
+
+  applyLang(current);
+
+  /* nav scroll state */
+  var nav = document.getElementById("siteNav");
+  function onScrollNav(){
+    if(window.scrollY > 80){ nav.classList.add("scrolled"); }
+    else{ nav.classList.remove("scrolled"); }
+  }
+  onScrollNav();
+  window.addEventListener("scroll", onScrollNav, { passive:true });
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* parallax atmosphere */
+  if(!reduceMotion){
+    var layers = Array.prototype.slice.call(document.querySelectorAll("[data-parallax]"));
+    var ticking = false;
+    function updateParallax(){
+      var y = window.scrollY;
+      layers.forEach(function(el){
+        var factor = parseFloat(el.getAttribute("data-parallax")) || 0.3;
+        el.style.transform = "translateY(" + (y * factor * -0.35) + "px)";
+      });
+      ticking = false;
+    }
+    window.addEventListener("scroll", function(){
+      if(!ticking){ window.requestAnimationFrame(updateParallax); ticking = true; }
+    }, { passive:true });
+    updateParallax();
+  }
+
+  /* reveal on scroll */
+  var revealEls = document.querySelectorAll(".reveal");
+  if(reduceMotion || !("IntersectionObserver" in window)){
+    revealEls.forEach(function(el){ el.classList.add("is-visible"); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold:0.15, rootMargin:"0px 0px -8% 0px" });
+    revealEls.forEach(function(el){ io.observe(el); });
+
+    /* safety net: guarantee every section becomes visible even if an
+       observer callback is ever missed (fast programmatic scroll, a
+       deep-link jump, an unusual browser) — content must never stay hidden */
+    window.setTimeout(function(){
+      revealEls.forEach(function(el){ el.classList.add("is-visible"); });
+    }, 3000);
+  }
+
+  /* RSVP form link placeholder — replace href="#" below with the real form URL */
+  document.querySelectorAll("[data-rsvp-link]").forEach(function(a){
+    a.setAttribute("href", "#");
+  });
+})();
+</script>
+</body>
+</html>
